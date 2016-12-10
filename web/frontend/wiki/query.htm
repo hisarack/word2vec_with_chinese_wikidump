@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wikipedia Query</title>
+<script src="https://code.jquery.com/jquery-1.10.0.min.js"></script>
+<script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>
+<script type="text/javascript" src="./js/d3.v2.js"></script>
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.1/react.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.1/JSXTransformer.js"></script>
+<script type="text/javascript" src="./js/tsne.js"></script>
+<head>
+<body>
+<div class="container-fluid">
+   <div class="page-header">
+      <h1>Word2Vec Similarity Demo</h1>
+   </div>
+   <div class="row">
+      <div class="col-sm-8 col-md-8" id="graph-panel">
+         <script type="text/javascript" src="./js/wiki-graph.js"></script>
+      </div>
+      <div class="col-sm-4 col-md-4" id="control-panel">
+      </div>
+      <script type="text/jsx" src="./js/wiki-ui.js"></script>
+   </div>
+</div>
+</body>
+</html>

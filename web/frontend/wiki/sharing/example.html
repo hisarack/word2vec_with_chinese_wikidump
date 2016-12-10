@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+                                   <!--
+                                   <h3>Let machine understands similarity<br/>in our world<br/>by Chinese Wikipedia article</h3>
+                                   -->
+                                   <h3>Running Word2Vec with Chinese Wikipedia dump</h3>
+                                   <h4></h4>
+                                </section>
+                                <section>
+                                   <h2>Similarity</h2>
+                                   <ol> 
+                                      <li>if two words have high similarity, it means they have strong relationship
+                                      <pre><code>
+"魯夫" is main charactrer in "海賊王"
+"東京" is capital city in "日本"
+                                      </code></pre>
+                                      </li> 
+                                      <li>use wikipedia to let machine has general sense about our world</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h2>Related Application</h2>
+                                   <ol>
+                                      <li>voice-driven assistants<br/>(Siri, Google Now, Microsoft Cortana)</li>
+                                      <li>e-commerce recommandation<br/>(Alibaba, Rakuten)</li>
+                                      <li>question answering(IBM Waston)</li>
+                                      <li>others(Flipboard, SmartNews)</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h2>Related Application</h2>
+                                   <img src="./img/watson.jpg"/>
+                                </section>
+                                <section>
+                                   <h2>Build you own smart AI</h2>
+                                   <img src="./img/fb.png"/>
+                                </section>
+                                <section>
+                                   <h2>My current progress</h2>
+                                   <img src="./img/flow.png"/>
+                                </section>
+				<section>
+                                   <h2>Download Wikipedia</h2>
+                                   <ol>
+                                      <li>https://dumps.wikimedia.org/zhwiki/latest/zhwiki-latest-pages-articles.xml.bz2</li>
+                                      <li>it contains traditional chinese and simplified chinese articles</li>
+                                      <li>1G file size, 230,000 articles, 150,000,000 words</li>
+                                   </ol>
+                                </section>
+				<section>
+                                   <h2>Preprocessing</h2>
+                                   <ol> 
+                                      <li>use OpenCC to translate from simplified chinese to traditional chinese</li> 
+                                      <li>support C、C++、Python、PHP、Java、Ruby、Node.js</li> 
+                                      <li>compatible with Linux, Windows and Mac</li> 
+                                      <li>“智能手机” -> “智慧手機”, “信息” -> “資訊”</li>
+                                      <li>you can play it on the website http://opencc.byvoid.com/</li>
+                                   </ol>
+                                   <pre><code>
+opencc -i zhwiki.txt -o twwiki.txt -c /usr/share/opencc/s2twp.json
+                                   </code></pre>
+                                </section>
+				<section>
+                                   <h2>Preprocessing</h2>
+                                   <ol>
+                                      <li>use gensim to extract article from Wikipedia dump</li>
+                                      <li>2G memory is required</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h2>Preprocessing</h2>
+			           <pre><code class="python" data-trim contenteditable>
+from gensim.corpora import WikiCorpus
+
+if __name__ == '__main__':
+
+    inp, outp = sys.argv[1:3]
+
+    output = open(outp,'w')
+
+    wiki = WikiCorpus(inp, lemmatize=False, dictionary={})
+    for text in wiki.get_texts():
+        output.write(space.join(text) + "\n")
+    
+    output.close()
+                                   </code></pre>
+                                   <p>gensim provides iterator to extract sentences from compressed wiki dump</p>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <ol>
+                                      <li>english uses some notation(whitespace, dot, etc) to separate words,<br/>but not all language follow this practice</li>
+                                      <li>"下雨天/留客天/留我/不留", "下雨/天留客/天留/我不留"</li>
+                                      <li>new word keep to be generated(such as "小確幸", "物聯網")</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <p>Jieba supports full and search mode<p>
+			           <pre><code class="python" data-trim contenteditable>
+#encoding=UTF-8
+import jieba
+
+if __name__ == '__main__':
+
+    input_str = u'今天讓我們來測試中文斷詞'
+
+    seg_list = jieba.cut(input_str, cut_all=True) # full mode
+    print(', '.join(seg_list))
+
+    seg_list = jieba.cut(input_str, cut_all=False) # search mode
+    print(', '.join(seg_list))
+
+                                   </code></pre>
+                                   <pre>
+今天, 讓, 我, 們, 來, 測, 試, 中文, 斷, 詞
+今天, 讓, 我們, 來, 測試, 中文, 斷詞
+                                   </pre>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <p>sometimes the result is a little bit funny<p>
+			           <pre><code class="python" data-trim contenteditable>
+#encoding=UTF-8
+import jieba
+
+if __name__ == '__main__':
+
+    input_str = u'張無忌來大都找我吧!哈哈哈哈哈哈'
+
+    seg_list = jieba.cut(input_str, cut_all=False)
+    print(', '.join(seg_list))
+                                   </code></pre>
+                                   <pre>
+ 張無忌, 來, 大都, 找, 我, 吧, !, 哈哈哈, 哈哈哈
+                                   </pre>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <p>good dictionary, good result<p>
+			           <pre><code class="python" data-trim contenteditable>
+#encoding=UTF-8
+import jieba
+
+if __name__ == '__main__':
+
+    input_str = u'舒潔衛生紙買一送一'
+ 
+    seg_list = jieba.cut(input_str, cut_all=False)
+    print(', '.join(seg_list))
+
+    jieba.set_dictionary('./data/dict.txt.big')
+
+    seg_list = jieba.cut(input_str, cut_all=False)
+    print(', '.join(seg_list))
+                                   </code></pre>
+                                   <pre>
+舒潔衛, 生紙, 買, 一送, 一    
+舒潔, 衛生紙, 買一送一
+                                   </pre>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <p>verb? nouns? adjective? adverb? <p>
+			           <pre><code class="python" data-trim contenteditable>
+#encoding=UTF-8
+import pseg
+
+if __name__ == '__main__':
+
+    input_str = u'今天讓我們來測試中文斷詞'
+
+    seg_list = pseg.cut(input_str)
+    for seg, flag in seg_list:
+        print u'{}:{}'.format(seg, flag)
+                                   </code></pre>
+                                   <pre>
+今天:t 讓:v 我們:r 來:v 測試:vn 中文:nz 斷詞:n
+                                   </pre>
+                                </section>
+                                <section>
+                                   <h2>Segmentation</h2>
+                                   <p>keyword extraction<p>
+			           <pre><code class="python" data-trim contenteditable>
+#encoding=UTF-8
+import jieba
+import jieba.analyse
+
+if __name__ == '__main__':
+
+    input_str = u'我的故鄉在台灣, I am Taiwanese'
+
+    jieba.set_dictionary('./data/dict.txt.big')
+
+    seg_list = jieba.analyse.extract_tags(input_str, topK=3)
+    print(', '.join(seg_list))
+
+    jieba.analyse.set_stop_words('./data/stop_words.txt')
+
+    seg_list = jieba.analyse.extract_tags(input_str, topK=3)
+    print(', '.join(seg_list))
+                                   </code></pre>
+                                   <pre>
+ 台灣, am, 故鄉
+ 台灣, 故鄉, Taiwanese
+                                   </pre>
+                                </section>
+                                <section>
+                                   <h2>Finding Similarity</h2>
+                                   <ol> 
+                                      <li>How to do that ? Word2Vec is super star !</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h2>Word2Vec</h2>
+                                   <p>transform from word to vector, distance between vector implies degree of similarity</p> 
+                                   <pre><code>
+ vector("首爾") - vector("日本") > vector("東京") - vector("日本")
+ vector("東京") - vector("日本") + vector("首爾") = vector("南韓")
+                                   </code></pre>  
+                                </section>
+                                <section>
+                                   <h2>Word2Vec</h2>
+                                   <p>word2vec targets the word is asked to predict the surrounding context</p>
+                                   <pre><code>
+在日本,[ 青森 的 "蘋果" 又 甜 ]又好吃
+今年,新版的[ Macbook 是 "蘋果" 發表 的 ]重點之一
+                                   </code></pre>
+                                   <p>"青森" and "Macbook" have high simlaritiy with “蘋果"</p>
+                                   <p>training from previous window, "青森" and "日本" also have high simlaritiy</p>
+                                </section>
+                                <!--
+                                <section>
+                                   <h2>Word2Vec</h2>
+                                   <p>tap a lot of enemy's encrypted message</p>
+                                   <p>set knobs to correct position</p>
+                                   <p>engima machine cracks the encrpyted message automatically</p>
+                                   <img src="./img/engima-machine.jpg"/>
+                                </section>
+                                -->
+                                <section>
+                                   <h2>Word2Vec</h2>
+                                   <p>word2vec uses skip-gram neural network to predict neighbor context</p>
+                                   <img src="./img/skip-gram.png"/>
+                                </section>
+                                <section>
+                                   <h3>Training Word2Vec model by gensim</h3>
+                                   <p>words already preprocessed and separated by whitespace.</p>
+			           <pre><code class="python" data-trim contenteditable>
+                                   
+#encoding=UTF-8
+
+import multiprocessing
+
+from gensim.corpora import WikiCorpus
+from gensim.models import Word2Vec
+from gensim.models.word2vec import LineSentence
+
+if __name__ == '__main__':
+
+    inp = sys.argv[1]
+    model = Word2Vec(LineSentence(inp), 
+                     size=100, 
+                     window=10, 
+                     min_count=10, 
+                     workers=multiprocessing.cpu_count())
+
+                                   </code></pre>
+                                   <p>it doesn't work for me, gensim's word2vec run out of memory</p>
+                                </section>
+                                <section>
+                                   <h3>Move to Spark MLlib</h3>
+                                   <ol>
+                                       <li>Spark offer over 80 operators that make it easy to build parallel application</li>
+                                       <li>Databrick company uses Spark to break world record in 2014 1TB sort benchmark completition</li>
+                                       <li>MLlib is Spark's machine learning library.</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h3>Spark cluster overview</h3>
+                                   <ol>
+                                      <li>Spark is master-slave architecture, which likes YARN</li>
+                                      <li>cluster management is master, it handle resource managemnet and slave health management.</li>
+                                      <li>when you launch application, <br/>
+                                          master will assign a slave to be driver. <br/>
+                                          driver request resource from master, <br/>
+                                          execute main function and assign task to slave</li>
+                                   </ol>
+                                   <img src="./img/cluster-overview.png"/>
+                                </section>
+                                <section>
+                                   <h3>Spark cluster deployment</h3>
+                                   <ol>
+                                      <li>use Linode API to create and boot new instance rapidly</li>
+                                      <li>use standalone Spark cluster<br/> it also can deploy on Mesos or YARN cluster</li>
+                                      <li>install Java,Scala and put pre-built Spark, finally launch slave executor!</li>
+                                      <li>use ansible to deploy spark executor and use LZ4 to speed up decompress pre-built Spark package</li>
+                                   </ol>
+                                </section>
+                                <section>
+                                   <h3>Training Word2Vec model by Spark cluster</h3>
+                                   <p>RDD is the basic abstraction in Spark. <br/> Represents an immutable, partitioned collection of elements <br/> that can be operated on in parallel</p>
+			           <pre><code class="scala" data-trim contenteditable>
+                                   
+val input:RDD[String] = sc.textFile(inp, 5).cache()
+val token:RDD[Seq[String]] = input.map(article => tokenize(article))
+    
+val word2vec = new Word2Vec()
+word2vec.setNumPartitions(5)
+val model = word2vec.fit(token)
+
+sc.parallelize(Seq(model), 1).saveAsObjectFile("hdfs://....")
+
+                                   </code></pre>
+                                </section>
+                                <section>
+                                   <h3>Querying Word2Vec model by Spark cluster</h3>
+			                             <pre><code class="scala" data-trim contenteditable>
+                                   
+val model = sc.objectFile[Word2VecModel]("hdfs://....").first()
+val synonyms = model.findSynonyms("熱火",10)
+
+for((synonyms, cosineSim) <- synonyms){
+   println(synonyms+":"+cosineSim)
+}
+
+                                   </code></pre>
+                                   <p>load model from HDFS</p>
+                                   <p>compare with model training, resource requirement is cheap on finding similarity</p>
+                                </section>
+                                <section>
+                                   <h3>Query Word2Vec by Spark cluster</h3>
+                                   <img src="./img/flow2.png"/>     
+                                </section>
+                                <section>
+                                   <h3>Example of "man"</h3>
+                                   <img src="./img/example1.png"/>     
+                                </section>
+                                <section>
+                                   <h3>Example of "luffy"(one piece comic's man charactrer)</h3>
+                                   <img src="./img/example3.png"/>     
+                                </section>
+                                <section>
+                                   <h3>Example of "cell phone"</h3>
+                                   <img src="./img/example2.png"/>     
+                                </section>
+                                <section>
+                                  <h2>Thank you</h2>
+                                </section>
+                        </div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
